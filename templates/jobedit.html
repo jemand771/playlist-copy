@@ -1,0 +1,65 @@
+<html>
+<head><title>edit job</title></head>
+<form target="_self" method="post">
+    <label>
+        job name
+        <input type="text" name="name" value="{{ job.name }}"/>
+    </label>
+    <br>
+    <label>
+        source mode
+        <select name="src_mode">
+            {% for opt in SourceMode %}
+                <option value="{{ opt.value }}" {{ "selected" if job.src_mode == opt else "" }}>{{ opt.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <br>
+    <label>
+        target mode
+        <select name="target_mode">
+            {% for opt in TargetMode %}
+                <option value="{{ opt.value }}" {{ "selected" if job.target_mode == opt else "" }}>{{ opt.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <br>
+    <label>
+        source
+        <input type="text" name="source" value="{{ job.source or "" }}">
+    </label>
+    <br>
+    <label>
+        target
+        <input type="text" name="target" value="{{ job.target or "" }}">
+    </label>
+    <br>
+    <label>
+        target dupe mode
+        <select name="target_dupe_mode">
+            {% for opt in TargetDupeMode %}
+                <option value="{{ opt.value }}" {{ "selected" if job.target_dupe_mode == opt else "" }}>{{ opt.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <br>
+    <label>
+        treat seen as dupes
+        <input type="checkbox" name="treat_seen_as_dupes" {{ "checked" if job.treat_seen_as_dupes else "" }}>
+    </label>
+    <br>
+    <label>
+        purge before operation
+        <input type="checkbox" name="purge_before_operation" {{ "checked" if job.purge_before_operation else "" }}>
+    </label>
+    <br>
+    <label>
+        reverse source
+        <input type="checkbox" name="reverse_source" {{ "checked" if job.reverse_source else "" }}>
+    </label>
+    <!--TODO allow editing fetch limits (source and purge)-->
+    <br>
+    <button type="submit">save</button>
+</form>
+
+</html>

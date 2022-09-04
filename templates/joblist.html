@@ -1,0 +1,26 @@
+<html lang="en">
+<head>
+    <title>aaa</title>
+</head>
+<body>
+okay<br><br>
+<a href="/logout">log out</a> | <a href="/new">new</a>
+<br>
+<table>
+<tr>
+    <th>name</th>
+    <th>id</th>
+    <th>stuff</th>
+    <th>actions</th>
+</tr>
+{% for job in user.jobs %}
+    <tr>
+    <td>{{ job.name }}</td>
+    <td>{{ job.id }}</td>
+    <td>yeah</td>
+        <td><a href="/edit/{{ job.id }}">edit</a> | <a href="/delete/{{ job.id }}">delete</a></td>
+    </tr>
+{% endfor %}
+</table>
+</body>
+</html>
