@@ -2,10 +2,10 @@ import dataclasses
 import json
 import os
 
-import pyyoutube
 import redis
 
 from model import Job, User, YoutubeApi
+from util import make_youtube_api
 
 
 class Storage:
@@ -25,8 +25,9 @@ class Storage:
         user_dict = json.loads(self.redis.get(uid))
 
         if user_dict.get("type") == "youtube":
-            _api = pyyoutube.Api(access_token=user_dict["token"]["access_token"])
-            _api._refresh_token = user_dict["token"]["access_token"]
+            _api = make_youtube_api()
+            _api._access_token = user_dict["token"]["access_token"]
+            _api._refresh_token = user_dict["token"]["refresh_token"]
             user_dict["api"] = YoutubeApi(_api)
         else:
             # TODO handle no suitable api type

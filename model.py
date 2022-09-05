@@ -5,17 +5,94 @@ from dataclasses import dataclass
 import pyyoutube
 
 
-class Item:
+@dataclass(eq=True, frozen=True)
+class SizeAgeLimit:
+    count: int | None = None
+    age_seconds: int | None = None
+
+    def count_as_dict_if_set(self, key="count"):
+        return {} if self.count is None else {
+            key: self.count
+        }
+
+
+class ItemBase:
     pass
 
 
-class Playlist:
-
-    def get_elements(self) -> list[Item]:
+class PlaylistBase:
+    def __init__(self, *args, **kwargs):
         pass
 
-    def append(self, item: Item):
+    def purge(self, limit: SizeAgeLimit):
         pass
+
+    def get_items(self, limit: SizeAgeLimit, reverse: bool = False) -> list[ItemBase]:
+        pass
+
+    def contains(self, item: ItemBase) -> bool:
+        pass
+
+    def add(self, item: ItemBase):
+        pass
+
+    def remove_at_index(self, index: int):
+        pass
+
+
+class YoutubeItem(ItemBase):
+
+    def __init__(self, item: pyyoutube.PlaylistItem):
+        self.item = item
+
+
+class YoutubePlaylist(PlaylistBase):
+
+    def __init__(self, api: pyyoutube.Api, playlist: pyyoutube.Playlist):
+        super().__init__()
+        self.api = api
+        self.playlist = playlist
+
+    def get_items(self, limit: SizeAgeLimit, reverse: bool = False) -> list[YoutubeItem]:
+        return [
+            YoutubeItem(item)
+            for item
+            in self.api.get_playlist_items(
+                playlist_id=self.playlist.id,
+                **limit.count_as_dict_if_set("count")
+            ).items
+        ]
+
+    def purge(self, limit: SizeAgeLimit):
+        pass  # TODO implement
+
+    def contains(self, item: YoutubeItem) -> bool:
+        pass  # TODO implement (via playlist item filter)
+
+    def add(self, item: YoutubeItem):
+        # self.api.BASE_URL = "https://eo51s8b0fzilp1s.m.pipedream.net/"
+        r = self.api._request(
+            "playlistItems",
+            method="POST",
+            args={
+                "part": "snippet",
+                "access_token": self.api._access_token
+            },
+            post_args={
+                "snippet": {
+                    "playlistId": self.playlist.id,
+                    "resourceId": {
+                        "kind": "youtube#video",
+                        "videoId": item.item.snippet.resourceId.videoId
+                    }
+                },
+                "_json": True
+            }
+        )
+        data = self.api._parse_response(r)
+
+    def remove_at_index(self, index: int):
+        pass  # TODO implement
 
 
 class ApiBase:
@@ -31,6 +108,12 @@ class ApiBase:
         pass
 
     def get_token_dict(self) -> dict:
+        pass
+
+    def resolve_playlist(self, url_or_identifier: str) -> PlaylistBase:
+        pass
+
+    def create_playlist(self) -> PlaylistBase:
         pass
 
 
@@ -51,6 +134,16 @@ class YoutubeApi(ApiBase):
             "refresh_token": self.api._refresh_token,
         }
 
+    def resolve_playlist(self, url_or_identifier: str) -> PlaylistBase:
+        playlist_resp = self.api.get_playlist_by_id(playlist_id=url_or_identifier)
+        if len(playlist_resp.items) != 1:
+            raise ValueError("unexpected playlist result")
+
+        return YoutubePlaylist(self.api, playlist_resp.items[0])
+
+    def create_playlist(self) -> PlaylistBase:
+        raise NotImplementedError("lol")  # TODO implement via api hack shitfuckery
+
 
 class SourceMode(enum.IntEnum):
     none = 0
@@ -67,12 +160,6 @@ class TargetDupeMode(enum.IntEnum):
     include = 0
     void = 1
     leave = 2
-
-
-@dataclass(eq=True, frozen=True)
-class SizeAgeLimit:
-    count: int | None = None
-    age_seconds: int | None = None
 
 
 @dataclass

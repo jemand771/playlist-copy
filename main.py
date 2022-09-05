@@ -1,30 +1,16 @@
 import os
 
 import oauthlib.oauth2.rfc6749.errors
-import pyyoutube
 from flask import Flask, redirect, render_template, request, session
 
 import storage
 from model import Job, SourceMode, TargetDupeMode, TargetMode, User, YoutubeApi
+from util import httpsify_url, make_youtube_api
 
 app = Flask(__name__)
 app.secret_key = os.environ["SECRET_KEY"]
 
 STORAGE = storage.Storage()
-
-
-def make_youtube_api():
-    return pyyoutube.Api(
-        client_id=os.environ["YOUTUBE_CLIENT_ID"],
-        client_secret=os.environ["YOUTUBE_CLIENT_SECRET"]
-    )
-
-
-def httpsify_url(url):
-    # securr
-    if url.startswith("http://"):
-        return "https://" + url.removeprefix("http://")
-    return url
 
 
 @app.get("/")
