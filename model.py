@@ -17,7 +17,10 @@ class SizeAgeLimit:
 
 
 class ItemBase:
-    pass
+    id = None
+    title = None
+    artist = None
+    url = None
 
 
 class PlaylistBase:
